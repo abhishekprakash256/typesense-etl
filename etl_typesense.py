@@ -15,8 +15,18 @@ from typesense.exceptions import ObjectNotFound
 
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("ingestion.log"),       # <- logs to file
+        logging.StreamHandler()                     # <- logs to console
+    ]
+)
 logger = logging.getLogger(__name__)
+
 
 
 #make the typesense client 
@@ -38,11 +48,11 @@ mongo_client = mongo_helper_kit.create_mongo_client(MONGO_HOST_NAME)
 #try to check for the client
 try:
     typesense_client.collections['articles'].delete()
-    print("Collection 'articles' deleted.")
+    logger.info("Collection 'articles' deleted.")
 except ObjectNotFound:
-    print("Collection 'articles' does not exist. Skipping deletion.")
+    logger.info("Collection 'articles' does not exist. Skipping deletion.")
 except Exception as e:
-    print(f"Unexpected error occurred while deleting collection: {e}")
+    logger.info(f"Unexpected error occurred while deleting collection: {e}")
 
 
 
@@ -53,12 +63,12 @@ def check_client():
     """
     try:
         collections = typesense_client.collections.retrieve()
-        print("Connected successfully!")
+        logger.info("Connected successfully!")
         return True
 
     except Exception as e:
-        print("Connection failed!")
-        print("Error:", e)
+        logger.info("Connection failed!")
+        logger.info("Error:", e)
         return False
 
 
@@ -96,7 +106,7 @@ def ingest_data():
     if not container_health:
 
         logger.error("Typesense container is not healthy.")
-        
+
         return 
     
     client_health = check_client()
@@ -144,7 +154,7 @@ def ingest_data():
 
     #export the data and check
     export_output = typesense_client.collections['articles'].documents.export()
-    print(export_output)
+    logger.info(export_output)
 
     return True
 
