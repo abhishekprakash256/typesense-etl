@@ -24,7 +24,7 @@ client = typesense.Client({
 
 #make the search paramaters
 search_parameters = {
-  'q'         : 'neual netwo',
+  'q'         : 'neual netwo  ',
   'query_by'  : 'article_data'
 
 }

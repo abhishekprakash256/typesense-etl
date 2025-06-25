@@ -101,7 +101,12 @@ results = client.collections['your_collection_name'].documents.search(search_par
 print(results)
 ```
 
----
+### Run the test file manually 
+
+```bash
+ python3 -m test.test_search    # from the parent folder
+
+```
 
 
 ---
