@@ -1,12 +1,7 @@
 """
 The file for the ingestion of the data from mongo to typesense container
 """
-
-
-
-import json
-import os
-import sys
+import logging
 import requests
 import typesense
 import mongo_helper_kit
@@ -19,6 +14,9 @@ from typesense.exceptions import ObjectNotFound
 
 
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 #make the typesense client 
@@ -65,24 +63,15 @@ def check_client():
 
 
 
-
-def check_container_health():
-    """
-    The function to check the container health
-    """
-    url = "http://localhost:8108/health"
-
+def check_container_health(url="http://localhost:8108/health") -> bool:
     try:
         response = requests.get(url, timeout=2)
         if response.status_code == 200:
             return True
-        else:
-            print(f"Typesense health check failed with status: {response.status_code}")
-            return False
-        
+        logger.warning(f"Health check failed: {response.status_code}")
     except requests.exceptions.RequestException as e:
-        print(f"Error connecting to Typesense: {e}")
-        return False
+        logger.error(f"Connection to Typesense failed: {e}")
+    return False
     
 
 # Convert _id to id as string, keep the rest unchanged
@@ -106,13 +95,17 @@ def ingest_data():
 
     if not container_health:
 
-        return "The contaienr is not working"
+        logger.error("Typesense container is not healthy.")
+        
+        return 
     
     client_health = check_client()
 
     if not client_health :
 
-        return "The client is not initilaized properly"
+        logger.error("The client is not initilaized properly")
+
+        return 
     
     #create the article schema
     typesense_client.collections.create(ARTICLE_SCHEMA)
@@ -141,6 +134,12 @@ def ingest_data():
         cleaned_docs,
         {'action': 'upsert'}  # 'upsert' means insert or update
     )
+
+    for r in response:
+        if not r.get('success'):
+            logger.warning(f"Failed to index document ID {r.get('id')}: {r.get('error')}")
+
+    logger.info("Ingestion completed.")
 
 
     #export the data and check
