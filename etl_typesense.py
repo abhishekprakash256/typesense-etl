@@ -13,6 +13,11 @@ import mongo_helper_kit
 from bson import ObjectId
 from config import DB_NAME, COLLECTION_NAME, MONGO_HOST_NAME, FILE_PATH , API_KEY, ARTICLE_SCHEMA
 from typesense.exceptions import TypesenseClientError
+from typesense.exceptions import ObjectNotFound
+
+
+
+
 
 
 
@@ -29,8 +34,13 @@ client = typesense.Client({
 
 
 
-#delete the collection if created 
-#client.collections['articles'].delete()
+try:
+    client.collections['articles'].delete()
+    print("Collection 'articles' deleted.")
+except ObjectNotFound:
+    print("Collection 'articles' does not exist. Skipping deletion.")
+except Exception as e:
+    print(f"Unexpected error occurred while deleting collection: {e}")
 
 
 
