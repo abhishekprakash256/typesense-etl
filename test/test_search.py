@@ -6,7 +6,8 @@ import typesense
 import mongo_helper_kit
 from bson.objectid import ObjectId
 from config import DB_NAME, COLLECTION_NAME, MONGO_HOST_NAME, FILE_PATH
-
+import urllib.parse
+import re
 
 #make the client 
 client = typesense.Client({
@@ -21,10 +22,27 @@ client = typesense.Client({
 
 
 
+def clean_encoded_string(encoded_str):
+    # Step 1: Decode percent-encoded characters
+    decoded = urllib.parse.unquote(encoded_str)
+    
+    # Step 2: Replace non-alphanumeric characters with space
+    cleaned = re.sub(r'[^a-zA-Z0-9]', ' ', decoded)
+    
+    # Step 3: Collapse multiple spaces into one
+    result = re.sub(r'\s+', ' ', cleaned).strip()
+    
+    return result
+
+
+#testing the encoded string
+print(clean_encoded_string("%23%23federtaed"))
+
+
 
 #make the search paramaters
 search_parameters = {
-  'q'         : 'neual netwo  ',
+  'q'         : 'neural network',   #The Tinyurl generator is a URL shortening service developed as a web 
   'query_by'  : 'article_data'
 
 }
@@ -54,11 +72,11 @@ mongo_client = mongo_helper_kit.create_mongo_client(MONGO_HOST_NAME)
 db = mongo_client[DB_NAME]
 collection = db[COLLECTION_NAME]
 
-obj_id = ObjectId(id_numbers[0])
+#obj_id = ObjectId(id_numbers[0])
 
 
 # Find the document
-doc = collection.find_one({"_id": obj_id})
+#doc = collection.find_one({"_id": obj_id})
 
 # Print the result
 
@@ -94,7 +112,9 @@ print(results)
 
 
 #mongo sesrach data 
-mongo_helper = mongo_helper_kit.Helper_fun(MONGO_HOST_NAME)
+#mongo_helper = mongo_helper_kit.Helper_fun(MONGO_HOST_NAME)
 
-print(mongo_helper.search_database(DB_NAME, COLLECTION_NAME, "neural"))
+
+#prtint the results
+#print(mongo_helper.search_database(DB_NAME, COLLECTION_NAME, "neural"))
 
